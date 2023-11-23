@@ -36,6 +36,7 @@ public class ChessBoard {
 	}
 
 	public void placePiece(Pieces pieces, Position position) {
-		pieces[position.getRow()][position.getColumn] = pieces;
+		pieces[position.getRow()][position.getColumn()] = pieces;
+		pieces.position = position;
 	}
 }
