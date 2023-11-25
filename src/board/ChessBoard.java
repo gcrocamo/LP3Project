@@ -15,6 +15,7 @@ public class ChessBoard {
     return rows;
   }
 
+<<<<<<< HEAD
   public void setRows(int rows) {
     this.rows = rows;
   }
@@ -39,4 +40,22 @@ public class ChessBoard {
     pieces[position.getRow()][position.getColumn()] = piece;
     piece.position = position;
   }
+=======
+	public void setColumns(int columns) {
+		this.columns = columns;
+	}
+	
+	public Pieces pieces(int row, int column) {
+		return pieces[row][column];
+	}
+	 
+	public Pieces pieces(Position position) {
+		return pieces[position.getRow()][position.getColumn()];
+	}
+
+	public void placePiece(Pieces pieces, Position position) {
+		pieces[position.getRow()][position.getColumn()] = pieces;
+		pieces.position = position;
+	}
+>>>>>>> 2507fd78c01676d07987ae79bb9505fce6a4d593
 }
