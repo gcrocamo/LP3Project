@@ -33,6 +33,11 @@ public class UI {
 	        throw new InputMismatchException("Erro ao ler PosicaoXadrez. Valores válidos são de a1 a h8.");
 	    }
 	}
+	
+	public static void limparTela() {
+		System.out.print("\033[H\033[2J");
+		System.out.flush();
+	}	
 
 	public static void imprimirTabuleiro(PecasXadrez[][] pecas) {
 	    for (int i = 0; i < pecas.length; i++) {
