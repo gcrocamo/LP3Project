@@ -28,8 +28,17 @@ public class PartidaXadrez {
   }
 
   private void posicaoInicial() {
-                inserirNovaPeca('e', 8, new Rook(tabuleiro, Color.WHITE));
-                inserirNovaPeca('e', 8, new King(tabuleiro, Color.BLACK));
-                inserirNovaPeca('d', 4, new King(tabuleiro, Color.WHITE));
+	  inserirNovaPeca('c', 2, new Rook(tabuleiro, Color.WHITE));
+	  inserirNovaPeca('d', 2, new Rook(tabuleiro, Color.WHITE));
+	  inserirNovaPeca('e', 2, new Rook(tabuleiro, Color.WHITE));
+	  inserirNovaPeca('e', 1, new Rook(tabuleiro, Color.WHITE));
+	  inserirNovaPeca('d', 1, new King(tabuleiro, Color.WHITE));
+	  inserirNovaPeca('c', 7, new Rook(tabuleiro, Color.BLACK));
+	  inserirNovaPeca('c', 8, new Rook(tabuleiro, Color.BLACK));
+	  inserirNovaPeca('d', 7, new Rook(tabuleiro, Color.BLACK));
+	  inserirNovaPeca('e', 7, new Rook(tabuleiro, Color.BLACK));
+	  inserirNovaPeca('e', 8, new Rook(tabuleiro, Color.BLACK));
+	  inserirNovaPeca('d', 8, new King(tabuleiro, Color.BLACK));
+
         }
 }
