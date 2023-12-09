@@ -22,12 +22,13 @@ public class TestePartidaXadrez {
         	    System.out.println();
         	    System.out.print("Origem: ");
         	    PosicaoXadrez origem = UI.lerPosicaoXadrez(sc);
-
+        	    boolean[][] movimentosPossiveis = partidaXadrez.movimentosPossiveis(origem);
+				UI.limparTela();
+				UI.imprimirTabuleiro(partidaXadrez.getPecas(), movimentosPossiveis);
         	    System.out.println();
-        	    System.out.print("Destino: ");
-        	    PosicaoXadrez destino = UI.lerPosicaoXadrez(sc);
-
-        	    PecasXadrez pecaCapturada = partidaXadrez.realizarMovimentoXadrez(origem, destino);
+        	    System.out.print("Alvo: ");
+        	    PosicaoXadrez alvo = UI.lerPosicaoXadrez(sc);        	    
+        	    PecasXadrez pecaCapturada = partidaXadrez.realizarMovimentoXadrez(origem, alvo);
         	}
         	catch (ExcecaoXadrez e) {
         	    System.out.println(e.getMessage());

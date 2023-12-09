@@ -24,21 +24,21 @@ public class XadrezTabuleiro {
 
     public Peca pecas(int linha, int coluna) {
         if (!posicaoExiste(linha, coluna)) {
-            throw new ExcecaoTabuleiro("A posição não está no tabuleiro");
+            throw new ExcecaoTabuleiro("A posicao nao esta no tabuleiro");
         }
         return pecas[linha][coluna];
     }
 
     public Peca pecas(Posicao posicao) {
         if (!posicaoExiste(posicao)) {
-            throw new ExcecaoTabuleiro("A posição não está no tabuleiro");
+            throw new ExcecaoTabuleiro("A posicao nao esta no tabuleiro");
         }
         return pecas[posicao.getLinha()][posicao.getColuna()];
     }
 
     public void inserirPeca(Peca peca, Posicao posicao) {
         if (existePeca(posicao)) {
-            throw new ExcecaoTabuleiro("Já existe uma peça nesta posição: " + posicao);
+            throw new ExcecaoTabuleiro("Ja existe uma peça nesta posicao: " + posicao);
         }
         pecas[posicao.getLinha()][posicao.getColuna()] = peca;
         peca.setPosicao(posicao);
@@ -54,7 +54,7 @@ public class XadrezTabuleiro {
 
     public Peca removerPeca(Posicao posicao) {
         if (!posicaoExiste(posicao)) {
-            throw new ExcecaoTabuleiro("Posição não está no tabuleiro");
+            throw new ExcecaoTabuleiro("Posicao nao esta no tabuleiro");
         }
         if (pecas(posicao) == null) {
             return null;
@@ -68,7 +68,7 @@ public class XadrezTabuleiro {
     
     public boolean existePeca(Posicao posicao) {
         if (!posicaoExiste(posicao)) {
-            throw new ExcecaoTabuleiro("A posição não está no tabuleiro");
+            throw new ExcecaoTabuleiro("A posicao nao esta no tabuleiro");
         }
         return pecas(posicao) != null;
     }

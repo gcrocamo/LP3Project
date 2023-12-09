@@ -43,23 +43,36 @@ public class UI {
 	    for (int i = 0; i < pecas.length; i++) {
 	        System.out.print((8 - i) + " ");
 	        for (int j = 0; j < pecas.length; j++) {
-	            imprimirPeca(pecas[i][j]);
+	            imprimirPeca(pecas[i][j], false);
 	        }
 	        System.out.println();
 	    }
 	    System.out.println("  a b c d e f g h");
 	}
 
-	private static void imprimirPeca(PecasXadrez peca) {
-	    if (peca == null) {
-	        System.out.print("-");
-	    } else {
-	        if (peca.getColor() == Color.WHITE) {
-	            System.out.print(ANSI_WHITE + peca + ANSI_RESET);
-	        } else {
-	            System.out.print(ANSI_YELLOW + peca + ANSI_RESET);
+	public static void imprimirTabuleiro(PecasXadrez[][] pecas, boolean[][] movimentosPossiveis) {
+	    for (int i = 0; i < pecas.length; i++) {
+	        System.out.print((8 - i) + " ");
+	        for (int j = 0; j < pecas.length; j++) {
+	            imprimirPeca(pecas[i][j], movimentosPossiveis[i][j]);
 	        }
+	        System.out.println();
 	    }
+	    System.out.println("  a b c d e f g h");
+	}
+
+	private static void imprimirPeca(PecasXadrez peca, boolean background) {
+	    if (background) {
+	        System.out.print(ANSI_BLUE_BACKGROUND);
+	    }
+	    
+	    if (peca == null) {
+	        System.out.print("-" + ANSI_RESET);
+	    } else {
+	        String cor = (peca.getColor() == Color.WHITE) ? ANSI_WHITE : ANSI_YELLOW;
+	        System.out.print(cor + peca + ANSI_RESET);
+	    }
+	    
 	    System.out.print(" ");
 	}
 }
