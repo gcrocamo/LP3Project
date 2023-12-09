@@ -52,6 +52,20 @@ public class XadrezTabuleiro {
         return posicaoExiste(posicao.getLinha(), posicao.getColuna());
     }
 
+    public Peca removerPeca(Posicao posicao) {
+        if (!posicaoExiste(posicao)) {
+            throw new ExcecaoTabuleiro("Posição não está no tabuleiro");
+        }
+        if (pecas(posicao) == null) {
+            return null;
+        }
+        Peca aux = pecas(posicao);
+        aux.setPosicao(null);
+        pecas[posicao.getLinha()][posicao.getColuna()] = null;
+        return aux;
+    }
+
+    
     public boolean existePeca(Posicao posicao) {
         if (!posicaoExiste(posicao)) {
             throw new ExcecaoTabuleiro("A posição não está no tabuleiro");
