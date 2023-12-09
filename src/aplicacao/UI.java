@@ -1,6 +1,12 @@
 package aplicacao;
 
+import java.util.InputMismatchException;
+import java.util.Scanner;
+
+import xadrez.PecasXadrez;
+import xadrez.PosicaoXadrez;
 import xadrez.Color;
+
 import xadrez.PecasXadrez;
 
 public class UI {
@@ -17,28 +23,38 @@ public class UI {
 	public static final String ANSI_BLUE_BACKGROUND = "\u001B[44m";
 	public static final String ANSI_WHITE_BACKGROUND = "\u001B[47m";
 	
-	public static void imprimirTabuleiro(PecasXadrez[][] pecas) {
-		for (int i=0; i<pecas.length; i++) {
-			System.out.print((8-i) + " ");
-			for (int j=0; j<pecas.length; j++) {
-				imprimirPeca(pecas[i][j]);
-			}
-			System.out.println();
-		}
-		System.out.println("  a b c d e f g h");
+	public static PosicaoXadrez lerPosicaoXadrez(Scanner sc) {
+	    try {
+	        String s = sc.nextLine();
+	        char coluna = s.charAt(0);
+	        int linha = Integer.parseInt(s.substring(1));
+	        return new PosicaoXadrez(coluna, linha);
+	    } catch (RuntimeException e) {
+	        throw new InputMismatchException("Erro ao ler PosicaoXadrez. Valores válidos são de a1 a h8.");
+	    }
 	}
-	
-	private static void imprimirPeca(PecasXadrez pecas) {
-	    if (pecas == null) {
+
+	public static void imprimirTabuleiro(PecasXadrez[][] pecas) {
+	    for (int i = 0; i < pecas.length; i++) {
+	        System.out.print((8 - i) + " ");
+	        for (int j = 0; j < pecas.length; j++) {
+	            imprimirPeca(pecas[i][j]);
+	        }
+	        System.out.println();
+	    }
+	    System.out.println("  a b c d e f g h");
+	}
+
+	private static void imprimirPeca(PecasXadrez peca) {
+	    if (peca == null) {
 	        System.out.print("-");
 	    } else {
-	        if (pecas.getColor() == Color.WHITE) {
-	            System.out.print(ANSI_WHITE + pecas + ANSI_RESET);
+	        if (peca.getColor() == Color.WHITE) {
+	            System.out.print(ANSI_WHITE + peca + ANSI_RESET);
 	        } else {
-	            System.out.print(ANSI_YELLOW + pecas + ANSI_RESET);
+	            System.out.print(ANSI_YELLOW + peca + ANSI_RESET);
 	        }
 	    }
 	    System.out.print(" ");
 	}
-
 }
