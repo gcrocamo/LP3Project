@@ -10,7 +10,7 @@ import xadrez.PartidaXadrez;
 import xadrez.PecasXadrez;
 import xadrez.PosicaoXadrez;
 import xadrez.Color;
-import xadrez.PecasXadrez;
+
 
 public class UI {
 	
