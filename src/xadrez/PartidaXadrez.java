@@ -21,6 +21,8 @@ public class PartidaXadrez {
         private Color jogadorAtual;
         private boolean xeque;
         private boolean xequeMate;
+        private PecasXadrez promovido;
+        private PecasXadrez enPassantSuscetivel;
         private List<Peca> pecasNoTabuleiro = new ArrayList<>();
     	private List<Peca> pecasCapturadas = new ArrayList<>();
 
@@ -46,6 +48,14 @@ public class PartidaXadrez {
         public boolean getXequeMate() {
     		return xequeMate;
     	}
+        
+        public PecasXadrez getEnPassantSuscetivel() {
+    		return enPassantSuscetivel;
+    	}
+        
+        public PecasXadrez getPromovido() {
+        	return promovido;
+        }
         
         public PecasXadrez[][] getPecas(){
                 PecasXadrez[][] mat = new PecasXadrez[tabuleiro.getLinhas()][tabuleiro.getLinhas()];
@@ -73,15 +83,64 @@ public class PartidaXadrez {
     			desfazerMovimento(origem, alvo, pecaCapturada);
     			throw new ExcecaoXadrez("Nao pode colocar-se em xeque");
     		}
-    		xeque = (testeXeque(oponente(jogadorAtual))) ? true : false;
+    		PecasXadrez pecaMovida = (PecasXadrez)tabuleiro.pecas(alvo);
+    		
+    		// promocao
+    		promovido = null;
+    		if (pecaMovida instanceof Pawn) {
+    			if ((pecaMovida.getColor() == Color.WHITE && alvo.getLinha() == 0) || (pecaMovida.getColor() == Color.BLACK && alvo.getLinha() == 7)) {
+    				promovido = (PecasXadrez)tabuleiro.pecas(alvo);
+    				promovido = substituirPecaPromovida("Q");
+    			}
+    		}
+    		
+            xeque = (testeXeque(oponente(jogadorAtual))) ? true : false;
     		if (testeXequeMate(oponente(jogadorAtual))) {
     			xequeMate = true;
     		}
     		else {
     			proximoTurno();
     		}
+    		// en passant
+    		if (pecaMovida instanceof Pawn && (alvo.getLinha() == origem.getLinha() - 2 || alvo.getLinha() == origem.getLinha() + 2)) {
+    			enPassantSuscetivel = pecaMovida;
+    		}
+    		else {
+    			enPassantSuscetivel = null;
+    		}
             return pecaCapturada;
         }
+        
+        public PecasXadrez substituirPecaPromovida(String letra) {
+    		if (promovido == null) {
+    			throw new IllegalStateException("Nao tem peca para ser promovida");
+    		}
+    		if (!letra.equals("B") && !letra.equals("N") && !letra.equals("R") && !letra.equals("Q") && !letra.equals("b") && !letra.equals("n") && !letra.equals("r") && !letra.equals("q") && !letra.equals("r") && !letra.equals("K") ) {
+    			return promovido;
+    		}
+
+    		Posicao pos = promovido.getPosicaoXadrez().paraPosicao();
+    		Peca peca = tabuleiro.removerPeca(pos);
+    		pecasNoTabuleiro.remove(peca);
+
+    		PecasXadrez novaPeca = novaPeca(letra, promovido.getColor());
+    		tabuleiro.inserirPeca(novaPeca, pos);
+    		pecasNoTabuleiro.add(novaPeca);	
+
+    		return novaPeca;
+    	}
+
+    	private PecasXadrez novaPeca(String letra, Color color) {
+    		if (letra.equals("b")) return new Bishop(tabuleiro, color);
+    		if (letra.equals("n")) return new Knight(tabuleiro, color);
+    		if (letra.equals("q")) return new Queen(tabuleiro, color);
+    		if (letra.equals("B")) return new Bishop(tabuleiro, color);
+    		if (letra.equals("N")) return new Knight(tabuleiro, color);
+    		if (letra.equals("Q")) return new Queen(tabuleiro, color);
+    		if (letra.equals("r")) return new Rook(tabuleiro, color);
+    		if (letra.equals("K")) return new Knight(tabuleiro, color);
+    		return new Rook(tabuleiro, color);
+    	}
 
         private PecasXadrez fazerMovimento(Posicao origem, Posicao alvo) {
             PecasXadrez peca = (PecasXadrez)tabuleiro.removerPeca(origem);
@@ -109,7 +168,23 @@ public class PartidaXadrez {
                 tabuleiro.inserirPeca(torre, alvoT);
                 torre.aumentarNumeroJogadas();
             }
-
+            
+            // en passant
+    		if (peca instanceof Pawn) {
+    			if (origem.getColuna() != alvo.getColuna() && pecaCapturada == null) {
+    				Posicao pawnPosicao;
+    				if (peca.getColor() == Color.WHITE) {
+    					pawnPosicao = new Posicao(alvo.getLinha() + 1, alvo.getColuna());
+    				}
+    				else {
+    					pawnPosicao = new Posicao(alvo.getLinha() - 1, alvo.getColuna());
+    				}
+    				pecaCapturada = (PecasXadrez)tabuleiro.removerPeca(pawnPosicao);
+    				pecasCapturadas.add(pecaCapturada);
+    				pecasNoTabuleiro.remove(pecaCapturada);
+    			}
+    		}
+            
             return pecaCapturada;
         }
         
@@ -140,11 +215,26 @@ public class PartidaXadrez {
     		    tabuleiro.inserirPeca(torre, origemT);
     		    torre.diminuirNumeroJogadas();
     		}
+    		
+    		// en passant
+    		if (peca instanceof Pawn) {
+    			if (origem.getColuna() != alvo.getColuna() && pecaCapturada == enPassantSuscetivel) {
+    				PecasXadrez pawn = (PecasXadrez)tabuleiro.removerPeca(alvo);
+    				Posicao pawnPosicao;
+    				if (peca.getColor() == Color.WHITE) {
+    					pawnPosicao = new Posicao(3, alvo.getColuna());
+    				}
+    				else {
+    					pawnPosicao = new Posicao(4, alvo.getColuna());
+    				}
+    				tabuleiro.inserirPeca(pawn, pawnPosicao);
+    			}
+    		}
     	}
         
         private void validarPosicaoOrigem(Posicao posicao) {
             if (!tabuleiro.existePeca(posicao)) {
-                throw new ExcecaoXadrez("Nao ha peça na posicao de origem");
+                throw new ExcecaoXadrez("Nao ha peca na posicao de origem");
             }
             if (jogadorAtual != ((PecasXadrez)tabuleiro.pecas(posicao)).getColor()) {
     			throw new ExcecaoXadrez("A peca escolhida nao e sua");
@@ -231,16 +321,16 @@ public class PartidaXadrez {
             inserirNovaPeca('f', 1, new Bishop(tabuleiro, Color.WHITE));
             inserirNovaPeca('g', 1, new Knight(tabuleiro, Color.WHITE));
             inserirNovaPeca('h', 1, new Rook(tabuleiro, Color.WHITE));
-            inserirNovaPeca('a', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('b', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('c', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('d', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('e', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('f', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('g', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('h', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('a', 8, new Rook(tabuleiro, Color.BLACK));
+            inserirNovaPeca('a', 2, new Pawn(tabuleiro, Color.WHITE, this));
+            inserirNovaPeca('b', 2, new Pawn(tabuleiro, Color.WHITE, this));
+            inserirNovaPeca('c', 2, new Pawn(tabuleiro, Color.WHITE, this));
+            inserirNovaPeca('d', 2, new Pawn(tabuleiro, Color.WHITE, this));
+            inserirNovaPeca('e', 2, new Pawn(tabuleiro, Color.WHITE, this));
+            inserirNovaPeca('f', 2, new Pawn(tabuleiro, Color.WHITE, this));
+            inserirNovaPeca('g', 2, new Pawn(tabuleiro, Color.WHITE, this));
+            inserirNovaPeca('h', 2, new Pawn(tabuleiro, Color.WHITE, this));
             
+            inserirNovaPeca('a', 8, new Rook(tabuleiro, Color.BLACK));
             inserirNovaPeca('b', 8, new Knight(tabuleiro, Color.BLACK));
             inserirNovaPeca('c', 8, new Bishop(tabuleiro, Color.BLACK));
             inserirNovaPeca('d', 8, new Queen(tabuleiro, Color.BLACK));
@@ -248,13 +338,13 @@ public class PartidaXadrez {
             inserirNovaPeca('f', 8, new Bishop(tabuleiro, Color.BLACK));
             inserirNovaPeca('g', 8, new Knight(tabuleiro, Color.BLACK));
             inserirNovaPeca('h', 8, new Rook(tabuleiro, Color.BLACK));
-            inserirNovaPeca('a', 7, new Pawn(tabuleiro, Color.BLACK));
-            inserirNovaPeca('b', 7, new Pawn(tabuleiro, Color.BLACK));
-            inserirNovaPeca('c', 7, new Pawn(tabuleiro, Color.BLACK));
-            inserirNovaPeca('d', 7, new Pawn(tabuleiro, Color.BLACK));
-            inserirNovaPeca('e', 7, new Pawn(tabuleiro, Color.BLACK));
-            inserirNovaPeca('f', 7, new Pawn(tabuleiro, Color.BLACK));
-            inserirNovaPeca('g', 7, new Pawn(tabuleiro, Color.BLACK));
-            inserirNovaPeca('h', 7, new Pawn(tabuleiro, Color.BLACK));
+            inserirNovaPeca('a', 7, new Pawn(tabuleiro, Color.BLACK, this));
+            inserirNovaPeca('b', 7, new Pawn(tabuleiro, Color.BLACK, this));
+            inserirNovaPeca('c', 7, new Pawn(tabuleiro, Color.BLACK, this));
+            inserirNovaPeca('d', 7, new Pawn(tabuleiro, Color.BLACK, this));
+            inserirNovaPeca('e', 7, new Pawn(tabuleiro, Color.BLACK, this));
+            inserirNovaPeca('f', 7, new Pawn(tabuleiro, Color.BLACK, this));
+            inserirNovaPeca('g', 7, new Pawn(tabuleiro, Color.BLACK, this));
+            inserirNovaPeca('h', 7, new Pawn(tabuleiro, Color.BLACK, this));
         }
 }

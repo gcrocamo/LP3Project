@@ -13,7 +13,7 @@ public class Knight extends PecasXadrez {
 
     @Override
     public String toString() {
-        return "K";
+        return "N";
     }
 
     private boolean podeMover(Posicao posicao) {
