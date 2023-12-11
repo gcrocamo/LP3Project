@@ -21,6 +21,7 @@ public class PartidaXadrez {
         private Color jogadorAtual;
         private boolean xeque;
         private boolean xequeMate;
+        private PecasXadrez enPassantSuscetivel;
         private List<Peca> pecasNoTabuleiro = new ArrayList<>();
     	private List<Peca> pecasCapturadas = new ArrayList<>();
 
@@ -45,6 +46,10 @@ public class PartidaXadrez {
 
         public boolean getXequeMate() {
     		return xequeMate;
+    	}
+        
+        public PecasXadrez getEnPassantSuscetivel() {
+    		return enPassantSuscetivel;
     	}
         
         public PecasXadrez[][] getPecas(){
@@ -73,12 +78,20 @@ public class PartidaXadrez {
     			desfazerMovimento(origem, alvo, pecaCapturada);
     			throw new ExcecaoXadrez("Nao pode colocar-se em xeque");
     		}
-    		xeque = (testeXeque(oponente(jogadorAtual))) ? true : false;
+    		PecasXadrez pecaMovida = (PecasXadrez)tabuleiro.pecas(alvo);
+            xeque = (testeXeque(oponente(jogadorAtual))) ? true : false;
     		if (testeXequeMate(oponente(jogadorAtual))) {
     			xequeMate = true;
     		}
     		else {
     			proximoTurno();
+    		}
+    		// en passant
+    		if (pecaMovida instanceof Pawn && (alvo.getLinha() == origem.getLinha() - 2 || alvo.getLinha() == origem.getLinha() + 2)) {
+    			enPassantSuscetivel = pecaMovida;
+    		}
+    		else {
+    			enPassantSuscetivel = null;
     		}
             return pecaCapturada;
         }
@@ -109,7 +122,23 @@ public class PartidaXadrez {
                 tabuleiro.inserirPeca(torre, alvoT);
                 torre.aumentarNumeroJogadas();
             }
-
+            
+            // en passant
+    		if (peca instanceof Pawn) {
+    			if (origem.getColuna() != alvo.getColuna() && pecaCapturada == null) {
+    				Posicao pawnPosicao;
+    				if (peca.getColor() == Color.WHITE) {
+    					pawnPosicao = new Posicao(alvo.getLinha() + 1, alvo.getColuna());
+    				}
+    				else {
+    					pawnPosicao = new Posicao(alvo.getLinha() - 1, alvo.getColuna());
+    				}
+    				pecaCapturada = (PecasXadrez)tabuleiro.removerPeca(pawnPosicao);
+    				pecasCapturadas.add(pecaCapturada);
+    				pecasNoTabuleiro.remove(pecaCapturada);
+    			}
+    		}
+            
             return pecaCapturada;
         }
         
@@ -139,6 +168,21 @@ public class PartidaXadrez {
     		    PecasXadrez torre = (PecasXadrez)tabuleiro.removerPeca(alvoT);
     		    tabuleiro.inserirPeca(torre, origemT);
     		    torre.diminuirNumeroJogadas();
+    		}
+    		
+    		// en passant
+    		if (peca instanceof Pawn) {
+    			if (origem.getColuna() != alvo.getColuna() && pecaCapturada == enPassantSuscetivel) {
+    				PecasXadrez pawn = (PecasXadrez)tabuleiro.removerPeca(alvo);
+    				Posicao pawnPosicao;
+    				if (peca.getColor() == Color.WHITE) {
+    					pawnPosicao = new Posicao(3, alvo.getColuna());
+    				}
+    				else {
+    					pawnPosicao = new Posicao(4, alvo.getColuna());
+    				}
+    				tabuleiro.inserirPeca(pawn, pawnPosicao);
+    			}
     		}
     	}
         
@@ -231,16 +275,16 @@ public class PartidaXadrez {
             inserirNovaPeca('f', 1, new Bishop(tabuleiro, Color.WHITE));
             inserirNovaPeca('g', 1, new Knight(tabuleiro, Color.WHITE));
             inserirNovaPeca('h', 1, new Rook(tabuleiro, Color.WHITE));
-            inserirNovaPeca('a', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('b', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('c', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('d', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('e', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('f', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('g', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('h', 2, new Pawn(tabuleiro, Color.WHITE));
-            inserirNovaPeca('a', 8, new Rook(tabuleiro, Color.BLACK));
+            inserirNovaPeca('a', 2, new Pawn(tabuleiro, Color.WHITE, this));
+            inserirNovaPeca('b', 2, new Pawn(tabuleiro, Color.WHITE, this));
+            inserirNovaPeca('c', 2, new Pawn(tabuleiro, Color.WHITE, this));
+            inserirNovaPeca('d', 2, new Pawn(tabuleiro, Color.WHITE, this));
+            inserirNovaPeca('e', 2, new Pawn(tabuleiro, Color.WHITE, this));
+            inserirNovaPeca('f', 2, new Pawn(tabuleiro, Color.WHITE, this));
+            inserirNovaPeca('g', 2, new Pawn(tabuleiro, Color.WHITE, this));
+            inserirNovaPeca('h', 2, new Pawn(tabuleiro, Color.WHITE, this));
             
+            inserirNovaPeca('a', 8, new Rook(tabuleiro, Color.BLACK));
             inserirNovaPeca('b', 8, new Knight(tabuleiro, Color.BLACK));
             inserirNovaPeca('c', 8, new Bishop(tabuleiro, Color.BLACK));
             inserirNovaPeca('d', 8, new Queen(tabuleiro, Color.BLACK));
@@ -248,13 +292,13 @@ public class PartidaXadrez {
             inserirNovaPeca('f', 8, new Bishop(tabuleiro, Color.BLACK));
             inserirNovaPeca('g', 8, new Knight(tabuleiro, Color.BLACK));
             inserirNovaPeca('h', 8, new Rook(tabuleiro, Color.BLACK));
-            inserirNovaPeca('a', 7, new Pawn(tabuleiro, Color.BLACK));
-            inserirNovaPeca('b', 7, new Pawn(tabuleiro, Color.BLACK));
-            inserirNovaPeca('c', 7, new Pawn(tabuleiro, Color.BLACK));
-            inserirNovaPeca('d', 7, new Pawn(tabuleiro, Color.BLACK));
-            inserirNovaPeca('e', 7, new Pawn(tabuleiro, Color.BLACK));
-            inserirNovaPeca('f', 7, new Pawn(tabuleiro, Color.BLACK));
-            inserirNovaPeca('g', 7, new Pawn(tabuleiro, Color.BLACK));
-            inserirNovaPeca('h', 7, new Pawn(tabuleiro, Color.BLACK));
+            inserirNovaPeca('a', 7, new Pawn(tabuleiro, Color.BLACK, this));
+            inserirNovaPeca('b', 7, new Pawn(tabuleiro, Color.BLACK, this));
+            inserirNovaPeca('c', 7, new Pawn(tabuleiro, Color.BLACK, this));
+            inserirNovaPeca('d', 7, new Pawn(tabuleiro, Color.BLACK, this));
+            inserirNovaPeca('e', 7, new Pawn(tabuleiro, Color.BLACK, this));
+            inserirNovaPeca('f', 7, new Pawn(tabuleiro, Color.BLACK, this));
+            inserirNovaPeca('g', 7, new Pawn(tabuleiro, Color.BLACK, this));
+            inserirNovaPeca('h', 7, new Pawn(tabuleiro, Color.BLACK, this));
         }
 }
