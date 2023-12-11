@@ -21,6 +21,7 @@ public class PartidaXadrez {
         private Color jogadorAtual;
         private boolean xeque;
         private boolean xequeMate;
+        private PecasXadrez promovido;
         private PecasXadrez enPassantSuscetivel;
         private List<Peca> pecasNoTabuleiro = new ArrayList<>();
     	private List<Peca> pecasCapturadas = new ArrayList<>();
@@ -52,6 +53,10 @@ public class PartidaXadrez {
     		return enPassantSuscetivel;
     	}
         
+        public PecasXadrez getPromovido() {
+        	return promovido;
+        }
+        
         public PecasXadrez[][] getPecas(){
                 PecasXadrez[][] mat = new PecasXadrez[tabuleiro.getLinhas()][tabuleiro.getLinhas()];
                 for (int i=0; i<tabuleiro.getLinhas(); i++) {
@@ -79,6 +84,16 @@ public class PartidaXadrez {
     			throw new ExcecaoXadrez("Nao pode colocar-se em xeque");
     		}
     		PecasXadrez pecaMovida = (PecasXadrez)tabuleiro.pecas(alvo);
+    		
+    		// promocao
+    		promovido = null;
+    		if (pecaMovida instanceof Pawn) {
+    			if ((pecaMovida.getColor() == Color.WHITE && alvo.getLinha() == 0) || (pecaMovida.getColor() == Color.BLACK && alvo.getLinha() == 7)) {
+    				promovido = (PecasXadrez)tabuleiro.pecas(alvo);
+    				promovido = substituirPecaPromovida("Q");
+    			}
+    		}
+    		
             xeque = (testeXeque(oponente(jogadorAtual))) ? true : false;
     		if (testeXequeMate(oponente(jogadorAtual))) {
     			xequeMate = true;
@@ -95,6 +110,37 @@ public class PartidaXadrez {
     		}
             return pecaCapturada;
         }
+        
+        public PecasXadrez substituirPecaPromovida(String letra) {
+    		if (promovido == null) {
+    			throw new IllegalStateException("Nao tem peca para ser promovida");
+    		}
+    		if (!letra.equals("B") && !letra.equals("N") && !letra.equals("R") && !letra.equals("Q") && !letra.equals("b") && !letra.equals("n") && !letra.equals("r") && !letra.equals("q") && !letra.equals("r") && !letra.equals("K") ) {
+    			return promovido;
+    		}
+
+    		Posicao pos = promovido.getPosicaoXadrez().paraPosicao();
+    		Peca peca = tabuleiro.removerPeca(pos);
+    		pecasNoTabuleiro.remove(peca);
+
+    		PecasXadrez novaPeca = novaPeca(letra, promovido.getColor());
+    		tabuleiro.inserirPeca(novaPeca, pos);
+    		pecasNoTabuleiro.add(novaPeca);	
+
+    		return novaPeca;
+    	}
+
+    	private PecasXadrez novaPeca(String letra, Color color) {
+    		if (letra.equals("b")) return new Bishop(tabuleiro, color);
+    		if (letra.equals("n")) return new Knight(tabuleiro, color);
+    		if (letra.equals("q")) return new Queen(tabuleiro, color);
+    		if (letra.equals("B")) return new Bishop(tabuleiro, color);
+    		if (letra.equals("N")) return new Knight(tabuleiro, color);
+    		if (letra.equals("Q")) return new Queen(tabuleiro, color);
+    		if (letra.equals("r")) return new Rook(tabuleiro, color);
+    		if (letra.equals("K")) return new Knight(tabuleiro, color);
+    		return new Rook(tabuleiro, color);
+    	}
 
         private PecasXadrez fazerMovimento(Posicao origem, Posicao alvo) {
             PecasXadrez peca = (PecasXadrez)tabuleiro.removerPeca(origem);
@@ -188,7 +234,7 @@ public class PartidaXadrez {
         
         private void validarPosicaoOrigem(Posicao posicao) {
             if (!tabuleiro.existePeca(posicao)) {
-                throw new ExcecaoXadrez("Nao ha peça na posicao de origem");
+                throw new ExcecaoXadrez("Nao ha peca na posicao de origem");
             }
             if (jogadorAtual != ((PecasXadrez)tabuleiro.pecas(posicao)).getColor()) {
     			throw new ExcecaoXadrez("A peca escolhida nao e sua");
